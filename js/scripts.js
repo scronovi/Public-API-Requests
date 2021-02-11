@@ -1,19 +1,45 @@
 const gallery = document.getElementById('gallery');
-const apiURL = 'https://randomuser.me/api/';
-let fetchResult = []
+const apiURL = 'https://randomuser.me/api/?results=12&nat=NA';
 
-for (i = 0; i < 12; i += 1){
-    fetch(apiURL)
-        .then(response => response.json())
-        // .then(data => generateCard(data.results[0]));
-        .then(data => {
-            generateCard(data.results[0]);
-            modalData(data.results[0]);
-        })
-};
+fetch(apiURL)
+    .then(response => response.json())
+    // .then(data => generateCard(data.results[0]));
+    .then(data => {
+        for(i = 0; i < 12; i += 1){
+            generateCard(data.results[i]);
+            modalData(data.results[i]);
+        };
+});
 
-// Generate modal AND hide it
+// Generate modal
 function modalData(data) {
+    
+    // Format cell number
+    let number = data.cell;
+    const cleanedNumber = ('' + data.phone).replace(/\D/g, '')
+    const numberRegex = /^(\d{3})(\d{3})(\d{4})$/;
+    const numberMatch = cleanedNumber.match(numberRegex)
+    if (numberMatch) {
+        number = '(' + numberMatch[1] + ') ' + numberMatch[2] + '-' + numberMatch[3];
+    }
+    // Format Address
+    
+    const streetName = data.location.street.name;
+    const streetNumber = data.location.street.number;
+    const city = data.location.city;
+    const postCode = data.location.postcode;
+    
+    address = `${streetName} ` + `${streetNumber} ` + ',' + ` ${city} ` + `${postCode}`;
+
+    // Format birthday
+    let birthday = data.dob.date;
+    const birthdayChop = ('' + birthday).replace(/\D{10}/g, '')
+    const bdayYear = birthdayChop.slice(0,4); 
+    const bdayMonth = birthdayChop.slice(5,7); 
+    const bdayDay = birthdayChop.slice(8,10); 
+
+    let sortedBirthday = `${bdayMonth}-` + `${bdayDay}-` + `${bdayYear}`;
+
     const generateModalHTML = 
     `
     <div class="modal-container">
@@ -24,28 +50,24 @@ function modalData(data) {
                 <h3 id="name" class="modal-name cap">${data.name.first}</h3>
                 <p class="modal-text">${data.email}</p>
                 <p class="modal-text cap">${data.location.city}</p>
-                <hr>
-                <p class="modal-text">(555) 555-5555</p>
-                <p class="modal-text">123 Portland Ave., Portland, OR 97204</p>
-                <p class="modal-text">Birthday: 10/21/2015</p>
+                <p class="modal-text">${number}</p>
+                <p class="modal-text">${address}</p>
+                <p class="modal-text">Birthday: ${sortedBirthday}</p>
             </div>
-        </div>
-        // IMPORTANT: Below is only for exceeds tasks 
-        <div class="modal-btn-container">
-            <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
-            <button type="button" id="modal-next" class="modal-next btn">Next</button>
         </div>
     </div>
     `;
     gallery.insertAdjacentHTML('beforeend', generateModalHTML);
     
-    const modalContainers = gallery.querySelectorAll('.modal-container');
-    modalContainers.forEach((modalContainer) => {
-        modalContainer.style.display = 'none';
-    });
-    
     // Insert eventlistener for toggling modal 
-
+    const modalBtn = document.querySelectorAll('#modal-close-btn');
+    
+    modalBtn.forEach((btn) => {
+        btn.addEventListener('click', (evt) => {
+            // Set the style.display of modal to 'none'
+            evt.currentTarget.parentNode.parentNode.style.display = 'none';
+        });
+    });
 
 };
 
@@ -67,12 +89,11 @@ function generateCard(data){
 
     // add event listener for showing modal window
     const cards = document.querySelectorAll('.card');
-    console.log(cards);
     cards.forEach((card) => {
         card.addEventListener('click', (e) => {
-            console.log(e.target);
-            const modalContainers = gallery.querySelectorAll('.modal-container');
-            modalContainers.style.display = '';
+            // Find the targeted card
+            e.currentTarget.nextSibling.nextSibling.style.display = 'block';     
+            // Show the modal with the same information
         });
     });
 };
