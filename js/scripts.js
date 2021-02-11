@@ -93,7 +93,6 @@ function generateCard(data){
         card.addEventListener('click', (e) => {
             // Find the targeted card
             e.currentTarget.nextSibling.nextSibling.style.display = 'block';     
-            // Show the modal with the same information
         });
     });
 };
